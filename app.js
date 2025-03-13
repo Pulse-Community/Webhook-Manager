@@ -10,6 +10,41 @@ let savedRequests = JSON.parse(localStorage.getItem('savedRequests') || '[]');
 let lastRequestTime = 0;
 const COOLDOWN_TIME = 5000; // 5 Sekunden in Millisekunden
 
+// Mobile Menü Funktionalität
+function initMobileMenu() {
+    const mobileMenuButton = document.getElementById('mobileMenuButton');
+    const closeSidebarButton = document.getElementById('closeSidebar');
+    const sidebar = document.getElementById('sidebar');
+
+    // Öffnen des Menüs
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.remove('-translate-x-full');
+    });
+
+    // Schließen des Menüs
+    closeSidebarButton.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+    });
+
+    // Schließen des Menüs bei Klick außerhalb
+    document.addEventListener('click', (event) => {
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isClickOnMenuButton = mobileMenuButton.contains(event.target);
+        
+        if (!isClickInsideSidebar && !isClickOnMenuButton && !sidebar.classList.contains('-translate-x-full') && window.innerWidth < 768) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+
+    // Anpassen der Editoren bei Größenänderung
+    window.addEventListener('resize', () => {
+        if (requestEditor && responseEditor) {
+            requestEditor.layout();
+            responseEditor.layout();
+        }
+    });
+}
+
 // Toast-Benachrichtigungen
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
@@ -82,6 +117,9 @@ require(['vs/editor/editor.main'], function () {
 
     // Event Listener für HTTP-Methoden-Änderungen
     document.getElementById('httpMethod').addEventListener('change', updateRequestEditorState);
+
+    // Mobile Menü initialisieren
+    initMobileMenu();
 });
 
 // Request Editor Status aktualisieren
