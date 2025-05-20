@@ -26,6 +26,7 @@ Hey! 👋 Dieses Projekt ist aus einem [Pulse Community](https://steinberger.aca
 - 🎨 Moderne, responsive Benutzeroberfläche mit Tailwind CSS
 - 🔍 Syntax-Highlighting für JSON
 - 🔐 Lokale Datenspeicherung für maximale Privatsphäre
+- 🔑 Frei definierbare HTTP-Header für deine Requests
 
 ## 🎓 Entstanden in der Pulse Community
 
