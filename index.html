@@ -82,12 +82,12 @@
                         <div class="flex flex-col md:flex-row md:gap-4 mb-6">
                             <div class="flex-1 mb-4 md:mb-0">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Webhook URL</label>
-                                <input type="text" id="webhookUrl" placeholder="https://api.example.com/webhook" 
+                                <input type="text" id="webhookUrl" placeholder="https://api.example.com/webhook"
                                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Methode</label>
-                                <select id="httpMethod" 
+                                <select id="httpMethod"
                                         class="w-full md:w-auto p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent bg-white">
                                     <option value="GET">GET</option>
                                     <option value="POST">POST</option>
@@ -96,7 +96,12 @@
                                 </select>
                             </div>
                         </div>
-                        
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Request Headers (JSON)</label>
+                            <div id="headersEditor" class="h-32 border border-gray-300 rounded-md"></div>
+                        </div>
+
                         <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Request Body (JSON)</label>
                             <div id="requestEditor" class="h-48 md:h-64 border border-gray-300 rounded-md"></div>

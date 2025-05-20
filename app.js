@@ -5,7 +5,7 @@ require.config({
     }
 });
 
-let requestEditor, responseEditor;
+let requestEditor, responseEditor, headersEditor;
 let savedRequests = JSON.parse(localStorage.getItem('savedRequests') || '[]');
 let lastRequestTime = 0;
 const COOLDOWN_TIME = 5000; // 5 Sekunden in Millisekunden
@@ -92,6 +92,15 @@ function showToast(message, type = 'info') {
 require(['vs/editor/editor.main'], function () {
     // Request Editor
     requestEditor = monaco.editor.create(document.getElementById('requestEditor'), {
+        value: '{\n  \n}',
+        language: 'json',
+        theme: 'vs',
+        minimap: { enabled: false },
+        automaticLayout: true
+    });
+
+    // Headers Editor
+    headersEditor = monaco.editor.create(document.getElementById('headersEditor'), {
         value: '{\n  \n}',
         language: 'json',
         theme: 'vs',
@@ -238,11 +247,23 @@ async function sendWebhookRequest(url, method, body, isResend = false) {
         lastRequestTime = Date.now();
         handleButtonCooldown();
         showToast('Sende Anfrage...', 'info');
-        
+
+        let customHeaders = {};
+        const headersValue = headersEditor.getValue();
+        if (headersValue.trim()) {
+            try {
+                customHeaders = JSON.parse(headersValue);
+            } catch (e) {
+                showToast('Ungültige Header-JSON', 'error');
+                return;
+            }
+        }
+
         const options = {
             method: method,
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                ...customHeaders
             }
         };
 
@@ -256,7 +277,7 @@ async function sendWebhookRequest(url, method, body, isResend = false) {
         responseEditor.setValue(formattedResponse);
         
         if (!isResend) {
-            saveRequest(url, method, body);
+            saveRequest(url, method, body, headersValue.trim() ? headersValue : '');
         }
         
         showToast('Anfrage erfolgreich abgeschlossen', 'success');
@@ -267,12 +288,13 @@ async function sendWebhookRequest(url, method, body, isResend = false) {
 }
 
 // Anfrage speichern
-function saveRequest(url, method, body) {
+function saveRequest(url, method, body, headers) {
     const request = {
         id: Date.now(),
         url,
         method,
         body,
+        headers,
         timestamp: new Date().toLocaleString('de-DE')
     };
     
@@ -309,6 +331,11 @@ function updateSavedRequestsList() {
                             ${request.method}
                         </span>
                         <span class="text-xs text-gray-500">${request.timestamp}</span>
+                        ${request.headers ? `
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="Headers gespeichert">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        ` : ''}
                     </div>
                     <div class="flex gap-2">
                         <button onclick="loadRequest(${request.id})" 
@@ -338,6 +365,7 @@ function loadRequest(id) {
         document.getElementById('webhookUrl').value = request.url;
         document.getElementById('httpMethod').value = request.method;
         requestEditor.setValue(request.body || '{\n  \n}');
+        headersEditor.setValue(request.headers || '{\n  \n}');
         updateRequestEditorState();
         
         showToast('Request geladen', 'success');
