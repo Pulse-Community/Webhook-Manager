@@ -101,7 +101,7 @@ Besuche einfach [https://tools.pulse.how/webhook/](https://tools.pulse.how/webho
 
 Beiträge sind immer willkommen! Bitte lesen Sie unsere [Beitragsrichtlinien](CONTRIBUTING.md) für Details.
 
-1. Fork das Projekt
+1. Forke das Projekt
 2. Erstellen Sie Ihren Feature Branch (`git checkout -b feature/AmazingFeature`)
 3. Commit Ihre Änderungen (`git commit -m 'Add some AmazingFeature'`)
 4. Push zum Branch (`git push origin feature/AmazingFeature`)

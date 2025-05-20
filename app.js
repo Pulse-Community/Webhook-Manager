@@ -152,30 +152,30 @@ async function formatResponse(response) {
     if (contentType.includes('application/json')) {
         try {
             const jsonData = JSON.parse(responseText);
-            responseEditor.getModel().setLanguage('json');
+            monaco.editor.setModelLanguage(responseEditor.getModel(), 'json');
             return JSON.stringify(jsonData, null, 2);
         } catch (e) {
             // Wenn JSON-Parsing fehlschlägt, zeige den Rohtext
-            responseEditor.getModel().setLanguage('text');
+            monaco.editor.setModelLanguage(responseEditor.getModel(), 'text');
             return responseText;
         }
     }
     
     // HTML-Erkennung und Formatierung
     else if (contentType.includes('text/html')) {
-        responseEditor.getModel().setLanguage('html');
+        monaco.editor.setModelLanguage(responseEditor.getModel(), 'html');
         return responseText;
     }
     
     // XML-Erkennung und Formatierung
     else if (contentType.includes('application/xml') || contentType.includes('text/xml')) {
-        responseEditor.getModel().setLanguage('xml');
+        monaco.editor.setModelLanguage(responseEditor.getModel(), 'xml');
         return responseText;
     }
     
     // Plaintext und andere Formate
     else {
-        responseEditor.getModel().setLanguage('text');
+        monaco.editor.setModelLanguage(responseEditor.getModel(), 'text');
         return responseText;
     }
 }
