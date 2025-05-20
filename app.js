@@ -273,11 +273,12 @@ async function sendWebhookRequest(url, method, body, isResend = false) {
 
         const response = await fetch(url, options);
         const formattedResponse = await formatResponse(response);
-        
+
         responseEditor.setValue(formattedResponse);
-        
+
         if (!isResend) {
-            saveRequest(url, method, body, headersValue.trim() ? headersValue : '');
+            const title = document.getElementById('requestTitle').value;
+            saveRequest(url, method, body, headersValue.trim() ? headersValue : '', title);
         }
         
         showToast('Anfrage erfolgreich abgeschlossen', 'success');
@@ -288,21 +289,20 @@ async function sendWebhookRequest(url, method, body, isResend = false) {
 }
 
 // Anfrage speichern
-function saveRequest(url, method, body, headers) {
+function saveRequest(url, method, body, headers, title = '') {
     const request = {
         id: Date.now(),
         url,
         method,
         body,
         headers,
+        title,
+        pinned: false,
         timestamp: new Date().toLocaleString('de-DE')
     };
-    
+
     savedRequests.unshift(request);
-    if (savedRequests.length > 10) {
-        savedRequests.pop();
-    }
-    
+
     localStorage.setItem('savedRequests', JSON.stringify(savedRequests));
     updateSavedRequestsList();
 }
@@ -311,15 +311,23 @@ function saveRequest(url, method, body, headers) {
 function updateSavedRequestsList() {
     const container = document.getElementById('savedRequests');
     container.innerHTML = '';
-    
-    savedRequests.forEach(request => {
+
+    const sorted = savedRequests.slice().sort((a, b) => {
+        if (a.pinned === b.pinned) {
+            return b.id - a.id;
+        }
+        return a.pinned ? -1 : 1;
+    });
+
+    sorted.forEach(request => {
         const requestElement = document.createElement('div');
         requestElement.className = 'bg-white rounded-lg shadow p-3 hover:shadow-md transition-shadow';
         requestElement.innerHTML = `
             <div class="space-y-2">
-                <div class="font-medium text-gray-800 truncate" title="${request.url}">
-                    ${request.url}
+                <div class="font-medium text-gray-800 truncate" title="${request.title || request.url}">
+                    ${request.title || request.url}
                 </div>
+                ${request.title ? `<div class=\"text-xs text-gray-500 truncate\" title=\"${request.url}\">${request.url}</div>` : ''}
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="px-2 py-1 text-xs font-medium rounded-full ${
@@ -338,7 +346,13 @@ function updateSavedRequestsList() {
                         ` : ''}
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="loadRequest(${request.id})" 
+                        <button onclick="togglePin(${request.id})"
+                                class="${request.pinned ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                            <svg class="w-4 h-4" ${request.pinned ? 'fill="currentColor"' : 'fill="none" stroke="currentColor"'} viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.158 6.631 6.987.015c.969 0 1.371 1.24.588 1.81l-5.662 4.126 2.113 6.63c.3.921-.755 1.687-1.54 1.122L12 17.77l-5.595 4.491c-.784.566-1.84-.201-1.54-1.122l2.112-6.63-5.662-4.126c-.783-.57-.38-1.81.588-1.81l6.987-.015 2.158-6.631z" />
+                            </svg>
+                        </button>
+                        <button onclick="loadRequest(${request.id})"
                                 class="text-accent-600 hover:text-accent-700 p-1 rounded-full hover:bg-accent-50 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -364,10 +378,11 @@ function loadRequest(id) {
     if (request) {
         document.getElementById('webhookUrl').value = request.url;
         document.getElementById('httpMethod').value = request.method;
+        document.getElementById('requestTitle').value = request.title || '';
         requestEditor.setValue(request.body || '{\n  \n}');
         headersEditor.setValue(request.headers || '{\n  \n}');
         updateRequestEditorState();
-        
+
         showToast('Request geladen', 'success');
     }
 }
@@ -378,6 +393,15 @@ function deleteRequest(id) {
     localStorage.setItem('savedRequests', JSON.stringify(savedRequests));
     updateSavedRequestsList();
     showToast('Request gelöscht', 'info');
+}
+
+function togglePin(id) {
+    const request = savedRequests.find(r => r.id === id);
+    if (request) {
+        request.pinned = !request.pinned;
+        localStorage.setItem('savedRequests', JSON.stringify(savedRequests));
+        updateSavedRequestsList();
+    }
 }
 
 // Event Listener für den Send-Button
